@@ -1,101 +1,167 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect } from "react";
+import { Slider } from "@/components/ui/slider";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+interface BMIResult {
+  id: string;
+  date: string;
+  bmi: number;
+  category: string;
+  height: number;
+  weight: number;
+}
+
+export default function BMICalculator() {
+  const [height, setHeight] = useState(170);
+  const [weight, setWeight] = useState(70);
+  const [bmi, setBMI] = useState(0);
+  const [bmiCategory, setBMICategory] = useState("");
+  const [results, setResults] = useState<BMIResult[]>([]);
+
+  useEffect(() => {
+    const calculatedBMI = weight / (height / 100) ** 2;
+    setBMI(parseFloat(calculatedBMI.toFixed(1)));
+
+    if (calculatedBMI < 18.5) {
+      setBMICategory("Underweight");
+    } else if (calculatedBMI >= 18.5 && calculatedBMI < 25) {
+      setBMICategory("Normal weight");
+    } else if (calculatedBMI >= 25 && calculatedBMI < 30) {
+      setBMICategory("Overweight");
+    } else if (calculatedBMI >= 30 && calculatedBMI < 35) {
+      setBMICategory("Obese Class I");
+    } else if (calculatedBMI >= 35 && calculatedBMI < 40) {
+      setBMICategory("Obese Class II");
+    } else {
+      setBMICategory("Obese Class III");
+    }
+  }, [height, weight]);
+
+  useEffect(() => {
+    const savedResults = localStorage.getItem("bmiResults");
+    if (savedResults) {
+      setResults(JSON.parse(savedResults));
+    }
+  }, []);
+
+  const saveResult = () => {
+    const newResult: BMIResult = {
+      id: Date.now().toString(),
+      date: new Date().toLocaleString(),
+      bmi,
+      category: bmiCategory,
+      height,
+      weight
+    };
+    const updatedResults = [newResult, ...results].slice(0, 10); // Keep only the last 10 results
+    setResults(updatedResults);
+    localStorage.setItem("bmiResults", JSON.stringify(updatedResults));
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">
+            BMI Calculator
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div>
+              <label
+                htmlFor="height"
+                className="block text-sm font-medium text-primary mb-1"
+              >
+                Height (cm): {height}
+              </label>
+              <Slider
+                id="height"
+                min={100}
+                max={250}
+                step={1}
+                value={[height]}
+                onValueChange={(value) => setHeight(value[0])}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="weight"
+                className="block text-sm font-medium text-primary mb-1"
+              >
+                Weight (kg): {weight}
+              </label>
+              <Slider
+                id="weight"
+                min={30}
+                max={200}
+                step={1}
+                value={[weight]}
+                onValueChange={(value) => setWeight(value[0])}
+                className="w-full"
+              />
+            </div>
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-2">Your BMI</h3>
+              <div className="text-4xl font-bold text-center">{bmi}</div>
+              <div
+                className={`text-center mt-2 font-semibold ${
+                  bmiCategory === "Normal weight"
+                    ? "text-green-600"
+                    : bmiCategory === "Underweight"
+                    ? "text-blue-600"
+                    : bmiCategory === "Overweight"
+                    ? "text-yellow-600"
+                    : "text-red-600"
+                }`}
+              >
+                {bmiCategory}
+              </div>
+            </div>
+            <Button onClick={saveResult} className="w-full">
+              Save Result
+            </Button>
+            <div className="mt-4 text-sm text-primary">
+              <p>BMI Categories:</p>
+              <ul className="list-disc list-inside">
+                <li>Underweight: &lt; 18.5</li>
+                <li>Normal weight: 18.5 - 24.9</li>
+                <li>Overweight: 25 - 29.9</li>
+                <li>Obese Class I: 30 - 34.9</li>
+                <li>Obese Class II: 35 - 39.9</li>
+                <li>Obese Class III: ≥ 40</li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl font-bold">BMI History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+            {results.length > 0 ? (
+              results.map((result) => (
+                <div key={result.id} className="mb-4 p-4 border rounded-md">
+                  <p className="font-semibold">Date: {result.date}</p>
+                  <p>BMI: {result.bmi}</p>
+                  <p>Category: {result.category}</p>
+                  <p>Height: {result.height} cm</p>
+                  <p>Weight: {result.weight} kg</p>
+                </div>
+              ))
+            ) : (
+              <p>No saved results yet.</p>
+            )}
+          </ScrollArea>
+        </CardContent>
+      </Card>
     </div>
   );
 }
