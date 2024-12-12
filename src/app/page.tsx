@@ -5,6 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import ToggleTheme from "./components/ToggleTheme";
 
 interface BMIResult {
   id: string;
@@ -57,13 +58,14 @@ export default function BMICalculator() {
       height,
       weight
     };
-    const updatedResults = [newResult, ...results].slice(0, 10); // Keep only the last 10 results
+    const updatedResults = [newResult, ...results].slice(0, 10);
     setResults(updatedResults);
     localStorage.setItem("bmiResults", JSON.stringify(updatedResults));
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
+      <ToggleTheme/>
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">
